@@ -1,7 +1,9 @@
 import lxml.etree as etree
-
+import collections as co
 
 xml_parser = etree.XMLParser(remove_comments=True)
+
+Structure = co.namedtuple('Structure', ('type', 'body'))
 
 
 def _parse_xml_tree(root):
@@ -30,12 +32,13 @@ def _parse_jff_structure_body(root_children):
     return tuple(child for child in root_children if child[0] != 'type')
 
 
-def _parse_jff_structure(path):
-    tag, root_leaf, root_children = _parse_jff_xml(path)
+def _parse_jff_structure(xml_tree):
+    tag, root_leaf, root_children = xml_tree
     assert tag == 'structure'
     assert not root_leaf
 
-    structure_type = _parse_jff_structure_type(root_children)
-    body = _parse_jff_structure_body(root_children)
+    return Structure(_parse_jff_structure_type(root_children), _parse_jff_structure_body(root_children))
 
-    return structure_type, body
+
+def parse_jff(path):
+    return _parse_jff_structure(_parse_jff_xml(path))

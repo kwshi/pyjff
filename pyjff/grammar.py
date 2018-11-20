@@ -1,19 +1,17 @@
-import parser
-import argparse
-import functools as ft
 import collections as co
-import pprint as pp
 import itertools as it
 
 
-argument_parser = argparse.ArgumentParser()
-argument_parser.add_argument("jff_path", metavar="jff-file", type=str)
-args = argument_parser.parse_args()
+#argument_parser = argparse.ArgumentParser()
+#argument_parser.add_argument("jff_path", metavar="jff-file", type=str)
+#args = argument_parser.parse_args()
 
-_original = co.namedtuple('original', ('symbol',))
-_term = co.namedtuple('term', ('symbol',))
-_bin = co.namedtuple('bin', ('string',))
-_start = co.namedtuple('start', ())
+_Original = co.namedtuple('_Original', ('symbol',))
+_Term = co.namedtuple('_Term', ('symbol',))
+_Bin = co.namedtuple('_Bin', ('string',))
+_Start = co.namedtuple('_Start', ())
+
+Grammar = co.namedtuple('Grammar', ('rules'))
 
 
 def _parse_rule(rule):
@@ -34,12 +32,11 @@ def _parse_rule(rule):
     return left, right
 
 
-def _parse_grammar(structure):
-    structure_type, body = structure
-    assert structure_type == "grammar"
+def parse(structure):
+    assert structure.type == "grammar"
 
     rules = {}
-    for left, target in map(_parse_rule, body):
+    for left, target in map(_parse_rule, structure.body):
         assert len(left) == 1
 
         if left not in rules:
@@ -302,10 +299,15 @@ def _format_parse_tree(tree):
     return "\n".join(_format_parse_tree_lines(tree))
 
 
-cnf = _chomsky_normalize(
-    _parse_grammar(parser._parse_jff_structure(args.jff_path)),
-    ("original", "S"),
-)
-
-for tree in _cyk(cnf, tuple("000#100"), "S"):
-    print(_format_parse_tree(tree))
+def run(rules, string, start):
+    return _cyk(_chomsky_normalize(rules, start))
+#
+#
+# cnf = _chomsky_normalize(
+#    _parse_grammar(parser._parse_jff_structure(args.jff_path)),
+#    ("original", "S"),
+# )
+#
+# for tree in _cyk(cnf, tuple("000#100"), "S"):
+#    print(_format_parse_tree(tree))
+#
